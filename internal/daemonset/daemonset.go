@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"golang.org/x/exp/maps"
+
 	ootov1alpha1 "github.com/qbarrand/oot-operator/api/v1alpha1"
 	"github.com/qbarrand/oot-operator/internal/constants"
 	appsv1 "k8s.io/api/apps/v1"
@@ -177,6 +179,8 @@ func (dc *daemonSetGenerator) SetDevicePluginAsDesired(ctx context.Context, ds *
 
 	standardLabels := map[string]string{
 		constants.ModuleNameLabel: mod.Name,
+		// used by the NVIDIA mig-manager
+		"app": "nvidia-device-plugin-daemonset",
 	}
 
 	containerVolumeMounts := []v1.VolumeMount{
@@ -199,8 +203,12 @@ func (dc *daemonSetGenerator) SetDevicePluginAsDesired(ctx context.Context, ds *
 		},
 	}
 
+	nodeSelector := make(map[string]string)
+	maps.Copy(nodeSelector, mod.Spec.Selector)
+	nodeSelector["nvidia.com/gpu.deploy.device-plugin"] = "true"
+
 	return dc.constructDaemonSet(ctx, ds, mod, *mod.Spec.DevicePlugin, "device-plugin", "", standardLabels,
-		mod.Spec.Selector, containerVolumeMounts, dsVolumes, true)
+		nodeSelector, containerVolumeMounts, dsVolumes, true)
 }
 
 func (dc *daemonSetGenerator) IsDevicePluginDaemonSet(ds appsv1.DaemonSet) bool {

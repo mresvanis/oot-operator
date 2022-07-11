@@ -3,7 +3,7 @@ name: Container image
 on:
   push:
     tags: ['*']
-    branches: [main]
+    branches: [gpu-operator-poc]
 
 jobs:
   build-push:
@@ -18,7 +18,7 @@ jobs:
         id: meta-operator
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/qbarrand/oot-operator
+          images: ghcr.io/mresvanis/oot-operator
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -30,7 +30,7 @@ jobs:
         id: meta-bundle
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/qbarrand/oot-operator-bundle
+          images: ghcr.io/mresvanis/oot-operator-bundle
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -42,7 +42,7 @@ jobs:
         id: meta-catalog
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/qbarrand/oot-operator-catalog
+          images: ghcr.io/mresvanis/oot-operator-catalog
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -84,7 +84,7 @@ jobs:
       - name: Generate the bundle content
         run: make bundle
         env:
-          IMG: ghcr.io/qbarrand/oot-operator@${{ steps.build-push-operator.outputs.digest }}
+          IMG: ghcr.io/mresvanis/oot-operator@${{ steps.build-push-operator.outputs.digest }}
 
       - name: Build and push bundle
         id: build-push-bundle
@@ -99,5 +99,5 @@ jobs:
       - name: Build and push catalog
         run: make catalog-build && make catalog-push
         env:
-          BUNDLE_IMG: ghcr.io/qbarrand/oot-operator-bundle@${{ steps.build-push-bundle.outputs.digest }}
+          BUNDLE_IMG: ghcr.io/mresvanis/oot-operator-bundle@${{ steps.build-push-bundle.outputs.digest }}
           VERSION: ${{ github.ref_name }}
